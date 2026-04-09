@@ -5,19 +5,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.estoque.estoque_api.model.Produto;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
 
 import java.util.List;
 import jakarta.validation.Valid;
+import java.util.Map;
+
+
 
 import com.estoque.estoque_api.repository.ProdutoRepository;
 
 @RestController
 @RequestMapping("/produtos")
+
+@CrossOrigin(origins = "http://localhost:5173")
 
 
 public class ProdutoController {
@@ -44,5 +52,21 @@ public class ProdutoController {
     public Produto buscar(@PathVariable Long id) {
     return repository.findById(id).orElse(null);
     }
+
+    @PutMapping("/{id}")
+    public Produto atualizar(@PathVariable Long id, @RequestBody Map<String, Object> dados) {
+    return repository.findById(id)
+        .map(produto -> {
+            if (dados.containsKey("nome"))
+                produto.setNome((String) dados.get("nome"));
+            if (dados.containsKey("preco"))
+                produto.setPreco(((Number) dados.get("preco")).doubleValue());
+            if (dados.containsKey("quantidade"))
+                produto.setQuantidade(produto.getQuantidade() + ((Number) dados.get("quantidade")).intValue());
+            return repository.save(produto);
+        })
+        .orElse(null);
+}
+    
 }
 
